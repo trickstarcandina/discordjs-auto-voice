@@ -1,0 +1,19 @@
+{
+  "name": "discord-auto-voice",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "scripts": {
+    "unregister": "node -r dotenv/config src/slash/delete.js",
+    "watch": "node -L --watch src",
+    "start": "node src/index.js",
+    "lint": "eslint --fix --ext .js, .",
+    "format": "prettier --write \"src/**/*.js\""
+  },
+  "dependencies": {
+    "@hunteroi/discord-temp-channels": "^3.2.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.44.0"
+  }
+}
