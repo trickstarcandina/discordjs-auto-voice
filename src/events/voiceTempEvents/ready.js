@@ -13,10 +13,12 @@ module.exports = function createEventReady(client, channel, category, name) {
 			childAutoDeleteIfParentGetsUnregistered: true,
 			childAutoDeleteIfOwnerLeaves: false,
 			childVoiceFormat: (str, count) => `${str}${name}`,
-			childVoiceFormatRegex: /^Example #\d+ \|/,
+			// `#${count}|${str}${name}`
+			childVoiceFormatRegex: /^#\d+\|/,
 			// childMaxUsers: 3,
 			childBitrate: 64000,
 			childShouldBeACopyOfParent: true,
+			childCanBeRenamed: true
 		});
 	});
 
@@ -32,7 +34,7 @@ module.exports = function createEventReady(client, channel, category, name) {
 	manager.on(TempChannelsManagerEvents.childRemove, (child, parent) =>
 		console.log('Child removed!', child, parent)
 	);
-	manager.on(TempChannelsManagerEvents.childPrefixChange, (child) =>
-		console.log('Prefix changed', child)
-	);
+	// manager.on(TempChannelsManagerEvents.childPrefixChange, (child) =>
+	// 	console.log('Prefix changed', child)
+	// );
 };
