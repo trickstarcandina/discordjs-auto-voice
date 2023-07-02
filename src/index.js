@@ -1,18 +1,23 @@
 require('dotenv').config({ path: '.env' });
-const { Client, IntentsBitField, GatewayIntentBits, Collection, Events } = require('discord.js');
-const { TempChannelsManager, TempChannelsManagerEvents } = require('@hunteroi/discord-temp-channels/lib');
-const registerSlash = require('../src/slash/register');
+const {
+	Client,
+	IntentsBitField,
+	GatewayIntentBits,
+	Collection,
+} = require('discord.js');
+const registerSlash = require('./slash/register');
+const indexEvent = require('./events/index');
 
 const client = new Client({
-  intents: [
-    IntentsBitField.Flags.GuildVoiceStates,
-    IntentsBitField.Flags.Guilds,
-    // for the unregister command
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.MessageContent,
+	intents: [
+		IntentsBitField.Flags.GuildVoiceStates,
+		IntentsBitField.Flags.Guilds,
+		// for the unregister command
+		IntentsBitField.Flags.GuildMessages,
+		IntentsBitField.Flags.MessageContent,
 
-    GatewayIntentBits.Guilds
-  ],
+		GatewayIntentBits.Guilds,
+	],
 });
 
 client.commands = new Collection();
@@ -21,49 +26,17 @@ client.commands = new Collection();
 registerSlash(client);
 
 //create voice
-const manager = new TempChannelsManager(client);
+indexEvent.handleEventsTempVoice(
+	client,
+	process.env.CHANNEL_ID_GLOBAL,
+	process.env.CATEGORY_ID_GLOBAL,
+	process.env.CHANNEL_ID_DOUBLE,
+	process.env.CATEGORY_ID_DOUBLE,
+	process.env.CHANNEL_ID_ALONE,
+	process.env.CATEGORY_ID_ALONE
+);
 
-client.on('ready', () => {
-  console.log('Connected!');
-
-  manager.registerChannel('1104617733649338459', {
-    childCategory: '723531207543095319',
-    childAutoDeleteIfEmpty: true,
-    childAutoDeleteIfParentGetsUnregistered: true,
-    childAutoDeleteIfOwnerLeaves: false,
-    childVoiceFormat: (str, count) => `Example #${count} | ${str}`,
-    childVoiceFormatRegex: /^Example #\d+ \|/,
-    childMaxUsers: 3,
-    childBitrate: 64000,
-    childShouldBeACopyOfParent: false
-  });
-});
-
-client.on('messageCreate', (message) => message.content === 'unregister' && manager.unregisterChannel('1104617733649338459'));
-
-manager.on(TempChannelsManagerEvents.channelRegister, (parent) => console.log('Registered', parent));
-manager.on(TempChannelsManagerEvents.channelUnregister, (parent) => console.log('Unregistered', parent));
-manager.on(TempChannelsManagerEvents.childAdd, (child, parent) => console.log('Child added!', child, parent));
-manager.on(TempChannelsManagerEvents.childRemove, (child, parent) => console.log('Child removed!', child, parent));
-manager.on(TempChannelsManagerEvents.childPrefixChange, (child) => console.log('Prefix changed', child));
-
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
-	const command = interaction.client.commands.get(interaction.commandName);
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
-	try {
-		await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-		} else {
-			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-		}
-	}
-});
+//discord events
+indexEvent.handleEventsDiscord(client);
 
 client.login(process.env.TOKEN);
