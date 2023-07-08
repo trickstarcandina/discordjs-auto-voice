@@ -1,7 +1,7 @@
 const { REST, Routes } = require('discord.js');
 const fs = require('node:fs');
 
-module.exports = function registerSlash(client) {
+module.exports = async function registerSlash(client) {
 	// register slash
 	const commands = [];
 	// Grab all the command files from the commands directory you created earlier
