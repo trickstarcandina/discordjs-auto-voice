@@ -2,11 +2,13 @@ const {
 	TempChannelsManagerEvents,
 	TempChannelsManager,
 } = require('@hunteroi/discord-temp-channels/lib');
-module.exports = function createEventReady(client, channel, category, name) {
+const mongodb = require('../../database/mongodb');
+
+module.exports = function createEventReady(client, channel, category, name, listChannel) {
 	const manager = new TempChannelsManager(client);
 	client.on('ready', () => {
 		console.log('Connected!');
-
+		console.log(listChannel);
 		manager.registerChannel(channel, {
 			childCategory: category,
 			childAutoDeleteIfEmpty: true,
@@ -18,7 +20,8 @@ module.exports = function createEventReady(client, channel, category, name) {
 			// childMaxUsers: 3,
 			childBitrate: 64000,
 			childShouldBeACopyOfParent: true,
-			childCanBeRenamed: true
+			childCanBeRenamed: true,
+			listChannelToRestore: listChannel
 		});
 	});
 
@@ -28,12 +31,14 @@ module.exports = function createEventReady(client, channel, category, name) {
 	manager.on(TempChannelsManagerEvents.channelUnregister, (parent) =>
 		console.log('Unregistered', parent)
 	);
-	manager.on(TempChannelsManagerEvents.childAdd, (child, parent) =>
-		console.log('Child added!', child, parent)
-	);
-	manager.on(TempChannelsManagerEvents.childRemove, (child, parent) =>
-		console.log('Child removed!', child, parent)
-	);
+	manager.on(TempChannelsManagerEvents.childAdd, (child, parent) => {
+		mongodb.upsertNewChannel(child.voiceChannel.id, parent.channelId, child.orderChannel);
+		console.log('Child added!', child, parent);
+	});
+	manager.on(TempChannelsManagerEvents.childRemove, (child, parent) => {
+		mongodb.deleteByChannelId(child.voiceChannel.id);
+		console.log('Child removed!', child, parent);
+	});
 	// manager.on(TempChannelsManagerEvents.childPrefixChange, (child) =>
 	// 	console.log('Prefix changed', child)
 	// );

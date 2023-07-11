@@ -1,7 +1,11 @@
 const voiceChannelSchema = require('../schema/voiceChannel')
 
-module.exports.insertNewChannel = async function (channelId, parentId, count) {
-    let newVoiceChannel = new voiceChannelSchema({
+module.exports.upsertNewChannel = async function (channelId, parentId, count) {
+    let newVoiceChannel = await voiceChannelSchema.findOne({ channelId: channelId });
+
+    if (newVoiceChannel) return newVoiceChannel;
+    
+    newVoiceChannel = new voiceChannelSchema({
         channelId: channelId,
         parentId: parentId,
         count: count

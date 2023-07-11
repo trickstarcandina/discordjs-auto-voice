@@ -24,13 +24,28 @@ const mongoose = require('mongoose');
 
 const main = async () => {
 	try {
+		client.commands = new Collection();
+
 		await mongoose
 			.connect(process.env.MONGO_DB, {
 				useNewUrlParser: true,
 				useUnifiedTopology: true,
 			})
-			.then(() => {
+			.then(async () => {
 				console.log('MongoDB connected');
+				//create voice
+				await indexEvent.handleEventsTempVoice(
+					client,
+					process.env.CHANNEL_ID_GLOBAL,
+					process.env.CATEGORY_ID_GLOBAL,
+					process.env.CHANNEL_ID_DOUBLE,
+					process.env.CATEGORY_ID_DOUBLE,
+					process.env.CHANNEL_ID_ALONE,
+					process.env.CATEGORY_ID_ALONE
+				);
+
+				//discord events
+				indexEvent.handleEventsDiscord(client);
 			})
 			.catch((err) => {
 				console.log(`Unable to connect MongoDB. Error: ${err}`);
@@ -38,24 +53,9 @@ const main = async () => {
 
 		await client.login(process.env.TOKEN);
 
-		client.commands = new Collection();
-
 		// register slash
 		await registerSlash(client);
 
-		//create voice
-		await indexEvent.handleEventsTempVoice(
-			client,
-			process.env.CHANNEL_ID_GLOBAL,
-			process.env.CATEGORY_ID_GLOBAL,
-			process.env.CHANNEL_ID_DOUBLE,
-			process.env.CATEGORY_ID_DOUBLE,
-			process.env.CHANNEL_ID_ALONE,
-			process.env.CATEGORY_ID_ALONE
-		);
-
-		//discord events
-		indexEvent.handleEventsDiscord(client);
 	} catch (error) {
 		console.log(error);
 		process.exit(1);
