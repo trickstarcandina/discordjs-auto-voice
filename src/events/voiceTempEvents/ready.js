@@ -1,7 +1,7 @@
 const {
 	TempChannelsManagerEvents,
 	TempChannelsManager,
-} = require('@hunteroi/discord-temp-channels/lib');
+} = require('@trickstarcandina/discord-temp-channels/lib');
 const mongodb = require('../../database/mongodb');
 
 module.exports = function createEventReady(client, channel, category, name, listChannel) {
